@@ -2,6 +2,7 @@ import cv2
 import random
 import numpy as np
 
+
 def preprocess(image, image_size, randomiser=False):
     '''Change the size of images to required dimensions whilst maintaining the colours, and transposing for TensorFlow'''
     (width, height) = image_size
@@ -17,11 +18,11 @@ def preprocess(image, image_size, randomiser=False):
 
     # creating required image
     (h, w) = image.shape
-    
+
     scale_width = w / width
     scale_height = h / height
     scale = max(scale_width, scale_height)
-    
+
     new_width = max(1, min(width, int(w / scale)))
     new_height = max(1, min(height, int(h / scale)))
     image = cv2.resize(image, (new_width, new_height))
@@ -41,5 +42,5 @@ def preprocess(image, image_size, randomiser=False):
         image = image / stddev
     else:
         image = image
-        
+
     return image
