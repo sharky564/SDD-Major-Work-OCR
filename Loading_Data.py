@@ -36,8 +36,10 @@ class Load_Data:
 
         f = open(path + 'words.txt')
         chars = set()
+        # find corrupted files
         corrupted = []
         known_corrupted = ['a01-117-05-02.png', 'r06-022-03-05.png']
+        # isolate the words from each line and compile them in a new text file
         for line in f:
             if not line or line[0] == '#':
                 continue
@@ -46,7 +48,8 @@ class Load_Data:
             assert len(line_split) >= 9
 
             filename_split = line_split[0].split('-')
-            filename = path + 'words/' + filename_split[0] + '/' + filename_split[0] + '-' + filename_split[1] + '/' + line_split[0] + '.png'
+            filename = path + 'words/' + \
+                filename_split[0] + '/' + filename_split[0] + '-' + filename_split[1] + '/' + line_split[0] + '.png'
 
             word = self.formatted(' '.join(line_split[8:]), text_len)
             chars = chars.union(set(list(word)))
@@ -57,10 +60,12 @@ class Load_Data:
 
             self.samples.append(Sample(word, filename))
 
+        # give warning that there are some additional corrupted files found
         if set(corrupted) != set(known_corrupted):
             print('Warning - Corrupted files found in dataset:', corrupted)
             print('Expected corrupted files:', known_corrupted)
 
+        # splitting the dataset into either training or testing
         sample_split = int(0.95 * len(self.samples))
         self.training_samples = self.samples[:sample_split]
         self.testing_samples = self.samples[sample_split:]
@@ -71,7 +76,7 @@ class Load_Data:
         self.num_samples = 25000
 
         self.train()
-
+        # compiling a list of characters
         self.characters = sorted(list(chars))
 
     def formatted(self, text, text_len):
@@ -101,7 +106,8 @@ class Load_Data:
 
     def batch_info(self):
         '''Number of batches trained through, as well as total number of batches'''
-        return (self.current // self.batch_size + 1, len(self.samples) // self.batch_size)
+        return (self.current // self.batch_size + 1,
+                len(self.samples) // self.batch_size)
 
     def check(self):
         '''Checks if next batch is possible'''
@@ -111,6 +117,12 @@ class Load_Data:
         '''Goes to next batch'''
         batch_range = range(self.current, self.current + self.batch_size)
         texts = [self.samples[i].text for i in batch_range]
-        images = [preprocess(cv2.imread(self.samples[i].path, cv2.IMREAD_GRAYSCALE), self.image_size, self.randomiser) for i in batch_range]
+        images = [
+            preprocess(
+                cv2.imread(
+                    self.samples[i].path,
+                    cv2.IMREAD_GRAYSCALE),
+                self.image_size,
+                self.randomiser) for i in batch_range]
         self.current += self.batch_size
         return Batch(texts, images)
